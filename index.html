@@ -75,12 +75,12 @@ html[dir="rtl"] .mini-note{direction:rtl}
     
     
     <div class="language-options" id="languageOptions" role="list">
-      <button type="button" class="language-choice" data-language="en" onclick="document.getElementById('languageGate').style.display='none';document.body.classList.remove('gate-open');document.documentElement.lang='en';document.documentElement.dir='ltr';">
+      <button type="button" class="language-choice" data-language="en" onclick="window.setShifaaLanguage('en')">
         <span class="choice-icon">EN</span>
         <span><strong>English</strong><small>Continue in English</small></span>
         <span class="choice-arrow">→</span>
       </button>
-      <button type="button" class="language-choice" data-language="ar" onclick="document.getElementById('languageGate').style.display='none';document.body.classList.remove('gate-open');document.documentElement.lang='ar';document.documentElement.dir='rtl';try{chooseLanguage('ar')}catch(e){console.error(e)}">
+      <button type="button" class="language-choice" data-language="ar" onclick="window.setShifaaLanguage('ar')">
         <span class="choice-icon">ع</span>
         <span><strong>العربية</strong><small>المتابعة باللغة العربية</small></span>
         <span class="choice-arrow">→</span>
@@ -279,6 +279,19 @@ window.googleTranslateElementInit=function(){
 };
 document.addEventListener('DOMContentLoaded',()=>{renderLanguageOptions();const search=document.getElementById('languageSearch');if(search)search.addEventListener('input',()=>renderLanguageOptions(search.value));const box=document.getElementById('languageOptions');if(box)box.addEventListener('click',e=>{const button=e.target.closest('[data-language]');if(button)selectShifaaLanguage(button.dataset.language)})});
 
+window.setShifaaLanguage = function(lang){
+  const root = document.documentElement;
+  root.lang = lang === 'ar' ? 'ar' : 'en';
+  root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  const gate = document.getElementById('languageGate');
+  if (gate) gate.style.display = 'none';
+  document.body.classList.remove('gate-open');
+  if (lang === 'ar') {
+    if (typeof chooseLanguage === 'function') chooseLanguage('ar');
+  } else {
+    document.title = 'ShifaLink — Better Healthcare Access in Egypt';
+  }
+};
 function chooseLanguage(lang){
   const root=document.documentElement;
   root.lang=lang; root.dir=lang==='ar'?'rtl':'ltr';
