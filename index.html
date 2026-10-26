@@ -76,11 +76,12 @@ html[dir="rtl"] .mini-note{direction:rtl}
     <input id="languageSearch" class="language-search" type="search" placeholder="Type a language name…" autocomplete="off" aria-label="Search languages">
     <div class="language-options" id="languageOptions" role="list"></div>
     <p id="languageEmpty" class="language-empty" hidden>No languages found. Try another spelling.</p>
-    <p class="language-availability">Full interface translation is currently available in English and Arabic. Other languages are listed for future translation support.</p>
+    <p class="language-availability">Choose from the language list to translate the website. Automatic translations may contain errors; confirm important medical information with a qualified professional.</p>
     <p class="language-foot">Better healthcare access, for everyone.<br><span lang="ar">رعاية صحية أوضح للجميع.</span></p>
   </div>
 </div>
 
+<div id="google_translate_element" style="position:fixed;bottom:10px;left:10px;z-index:9999;background:white;border-radius:8px;padding:4px;box-shadow:0 2px 12px #12324a18"></div>
 <header><div class="wrap nav">
 <a class="brand" href="#home"><span class="logo">✚</span> ShifaaLink</a>
 <nav class="navlinks"><a href="#problems">Challenges</a><a href="#tools">Care tools</a><a href="#hospitals">Hospitals</a><a href="#pharmacies">Pharmacies</a><a href="#support">Financial aid</a><a href="#report">Share a problem</a></nav>
@@ -226,7 +227,35 @@ const shifaaTranslations = {
 };
 const shifaaLanguages=[["en","English","EN"],["ar","العربية","ع"],["af","Afrikaans","AF"],["sq","Albanian","SQ"],["am","Amharic","AM"],["hy","Armenian","HY"],["az","Azerbaijani","AZ"],["eu","Basque","EU"],["be","Belarusian","BE"],["bn","Bengali","BN"],["bs","Bosnian","BS"],["bg","Bulgarian","BG"],["my","Burmese","MY"],["ca","Catalan","CA"],["zh","Chinese (Simplified)","中"],["zh-TW","Chinese (Traditional)","繁"],["hr","Croatian","HR"],["cs","Czech","CS"],["da","Danish","DA"],["nl","Dutch","NL"],["et","Estonian","ET"],["tl","Filipino","TL"],["fi","Finnish","FI"],["fr","French","FR"],["gl","Galician","GL"],["ka","Georgian","KA"],["de","German","DE"],["el","Greek","EL"],["gu","Gujarati","GU"],["ht","Haitian Creole","HT"],["ha","Hausa","HA"],["he","Hebrew","HE"],["hi","Hindi","हि"],["hu","Hungarian","HU"],["is","Icelandic","IS"],["ig","Igbo","IG"],["id","Indonesian","ID"],["ga","Irish","GA"],["it","Italian","IT"],["ja","Japanese","日"],["jv","Javanese","JV"],["kn","Kannada","KN"],["kk","Kazakh","KK"],["km","Khmer","KM"],["ko","Korean","한"],["ku","Kurdish","KU"],["ky","Kyrgyz","KY"],["lo","Lao","LO"],["lv","Latvian","LV"],["lt","Lithuanian","LT"],["mk","Macedonian","MK"],["ms","Malay","MS"],["ml","Malayalam","ML"],["mt","Maltese","MT"],["mi","Maori","MI"],["mr","Marathi","MR"],["mn","Mongolian","MN"],["ne","Nepali","NE"],["no","Norwegian","NO"],["or","Odia","OR"],["ps","Pashto","PS"],["fa","Persian","FA"],["pl","Polish","PL"],["pt","Portuguese","PT"],["pa","Punjabi","PA"],["ro","Romanian","RO"],["ru","Russian","RU"],["sr","Serbian","SR"],["si","Sinhala","SI"],["sk","Slovak","SK"],["sl","Slovenian","SL"],["so","Somali","SO"],["es","Spanish","ES"],["sw","Swahili","SW"],["sv","Swedish","SV"],["tg","Tajik","TG"],["ta","Tamil","TA"],["tt","Tatar","TT"],["te","Telugu","TE"],["th","Thai","TH"],["bo","Tibetan","BO"],["ti","Tigrinya","TI"],["tr","Turkish","TR"],["tk","Turkmen","TK"],["uk","Ukrainian","UK"],["ur","Urdu","UR"],["uz","Uzbek","UZ"],["vi","Vietnamese","VI"],["cy","Welsh","CY"],["yo","Yoruba","YO"],["zu","Zulu","ZU"]];
 function renderLanguageOptions(query=''){const box=document.getElementById('languageOptions');if(!box)return;const q=query.trim().toLocaleLowerCase();const matches=shifaaLanguages.filter(x=>x[1].toLocaleLowerCase().includes(q)||x[0].toLocaleLowerCase()===q);box.innerHTML=matches.map(x=>'<button type="button" class="language-choice" data-language="'+x[0]+'"><span class="choice-icon">'+x[2]+'</span><span><strong>'+escapeHTML(x[1])+'</strong><small>'+(x[0]==='en'?'Continue in English':x[0]==='ar'?'المتابعة باللغة العربية':'Language option')+'</small></span><span class="choice-arrow">→</span></button>').join('');document.getElementById('languageEmpty').hidden=matches.length>0}
-function selectShifaaLanguage(code){if(code==='en'||code==='ar'){chooseLanguage(code);return}alert('Full translation for this language is not available yet. Please choose English or Arabic for the current interface.')}
+function selectShifaaLanguage(code){
+  if(code==='en'||code==='ar'){chooseLanguage(code);return}
+  document.getElementById('languageGate').style.display='none';
+  document.body.classList.remove('gate-open');
+  const select=document.querySelector('.goog-te-combo');
+  if(select){
+    select.value=code;
+    select.dispatchEvent(new Event('change'));
+  }else{
+    window.shifaaPendingLanguage=code;
+    if(!document.getElementById('googleTranslateScript')){
+      const script=document.createElement('script');
+      script.id='googleTranslateScript';
+      script.src='https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.onerror=()=>alert('Automatic translation could not load. Please check your internet connection, or use your browser’s Translate option.');
+      document.head.appendChild(script);
+    }
+  }
+}
+window.googleTranslateElementInit=function(){
+  new google.translate.TranslateElement({pageLanguage:'en',autoDisplay:false},'google_translate_element');
+  const pending=window.shifaaPendingLanguage;
+  if(pending){
+    setTimeout(()=>{
+      const select=document.querySelector('.goog-te-combo');
+      if(select){select.value=pending;select.dispatchEvent(new Event('change'))}
+    },700);
+  }
+};
 document.addEventListener('DOMContentLoaded',()=>{renderLanguageOptions();const search=document.getElementById('languageSearch');if(search)search.addEventListener('input',()=>renderLanguageOptions(search.value));const box=document.getElementById('languageOptions');if(box)box.addEventListener('click',e=>{const button=e.target.closest('[data-language]');if(button)selectShifaaLanguage(button.dataset.language)})});
 
 function chooseLanguage(lang){
