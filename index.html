@@ -75,12 +75,12 @@ html[dir="rtl"] .mini-note{direction:rtl}
     
     
     <div class="language-options" id="languageOptions" role="list">
-      <button type="button" class="language-choice" data-language="en" onclick="chooseLanguage('en')">
+      <button type="button" class="language-choice" data-language="en" onclick="document.getElementById('languageGate').style.display='none';document.body.classList.remove('gate-open');document.documentElement.lang='en';document.documentElement.dir='ltr';">
         <span class="choice-icon">EN</span>
         <span><strong>English</strong><small>Continue in English</small></span>
         <span class="choice-arrow">→</span>
       </button>
-      <button type="button" class="language-choice" data-language="ar" onclick="chooseLanguage('ar')">
+      <button type="button" class="language-choice" data-language="ar" onclick="document.getElementById('languageGate').style.display='none';document.body.classList.remove('gate-open');document.documentElement.lang='ar';document.documentElement.dir='rtl';try{chooseLanguage('ar')}catch(e){console.error(e)}">
         <span class="choice-icon">ع</span>
         <span><strong>العربية</strong><small>المتابعة باللغة العربية</small></span>
         <span class="choice-arrow">→</span>
